@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
+const bodyParser = require('body-parser');
 //const MongoClient = require('mongodb').MongoClient;
 const mongoose = require('mongoose')
 const ListItem = require('./models/ListItem');
@@ -8,6 +10,13 @@ const ListItem = require('./models/ListItem');
 const url = "mongodb://localhost:27017/crud"
 //const dbname = "crud";
 
+// Middleware
+app.use(cors({
+    origin: 'http://localhost:3001',
+}))
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.listen(3000, function () {
     console.log('listening on 3000')
@@ -32,20 +41,20 @@ app.get('/list/:itemTitle', async (req, res) => {
 });
 
 // Post new Item
-app.post('/list/add/:newItemTitle', async (req, res) => {
+app.post('/list/add/', async (req, res) => {
     const newItem = new ListItem({
-        title: req.params.newItemTitle
+        title: req.body.title
     });
     newItem.save((err) => {
-        err ? res.send(err) : res.send('saved item');
+        err ? res.send(err) : res.send(newItem);
     })
 });
 
 // Post find and edit one
-app.put('/list/edit/:itemTitle/:newItemTitle', async (req, res) => {
-    const item = await ListItem.findOne({ title: req.params.itemTitle });
+app.put('/list/edit', async (req, res) => {
+    const item = await ListItem.findOne({ title: req.body.oldTitle });
     try {
-        item.title = req.params.newItemTitle;
+        item.title = req.body.newTitle;
         item.save((err) => {
             err ? res.send(err) : res.send('modified item');
         })
@@ -55,8 +64,8 @@ app.put('/list/edit/:itemTitle/:newItemTitle', async (req, res) => {
 });
 
 // Delete an item
-app.delete('/list/remove/:itemTitle', async (req, res) => {
-    const item = await ListItem.findOne({ title: req.params.itemTitle });
+app.post('/list/remove', async (req, res) => {
+    const item = await ListItem.findOne({ title: req.body.title });
     if(item){
         await item.remove();
         res.send('removed');
