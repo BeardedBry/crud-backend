@@ -17,14 +17,61 @@ app.get('/', (req, res) => {
     res.send('yo');
 });
 
-mongoose.connect(url, { useNewUrlParser: true});
+// Show list
+app.get('/list', async (req, res) => {
+    const items = await ListItem.find();
+    res.send(items);
+});
+
+// Get individual list item
+app.get('/list/:itemTitle', async (req, res) => {
+    const item = await ListItem.findOne({ title: req.params.itemTitle });
+    console.log(req.params.itemTitle);
+    console.log('item: ', item);
+    res.send(item);
+});
+
+// Post new Item
+app.post('/list/add/:newItemTitle', async (req, res) => {
+    const newItem = new ListItem({
+        title: req.params.newItemTitle
+    });
+    newItem.save((err) => {
+        err ? res.send(err) : res.send('saved item');
+    })
+});
+
+// Post find and edit one
+app.put('/list/edit/:itemTitle/:newItemTitle', async (req, res) => {
+    const item = await ListItem.findOne({ title: req.params.itemTitle });
+    try {
+        item.title = req.params.newItemTitle;
+        item.save((err) => {
+            err ? res.send(err) : res.send('modified item');
+        })
+    } catch (e) {
+        res.send(e);
+    }
+});
+
+// Delete an item
+app.delete('/list/remove/:itemTitle', async (req, res) => {
+    const item = await ListItem.findOne({ title: req.params.itemTitle });
+    if(item){
+        await item.remove();
+        res.send('removed');
+    }
+});
+
+
+mongoose.connect(url, { useNewUrlParser: true });
 
 const db = mongoose.connection;
 db.once('open', _ => {
     console.log('Database connected: ', url);
 })
 
-db.on('error', err =>{
+db.on('error', err => {
     console.error('connection error', err);
 });
 
@@ -43,9 +90,9 @@ db.on('error', err =>{
 
 // learnMongo.save();
 
-ListItem.find({},(err, res)=>{
-    console.log(res);
-});
+// ListItem.find({},(err, res)=>{
+//     console.log(res);
+// });
 
 
 // mongo client way
