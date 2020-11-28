@@ -7,12 +7,13 @@ const mongoose = require('mongoose')
 const ListItem = require('./models/ListItem');
 
 // consts:
-const url = "mongodb://localhost:27017/crud"
+const url = "mongodb://localhost:27017/crud";
+const allowedOrigin = 'http://localhost:3001';
 //const dbname = "crud";
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:3001',
+    origin: allowedOrigin,
 }))
 
 app.use(bodyParser.urlencoded({ extended: false }));
